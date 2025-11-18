@@ -11,7 +11,7 @@ export class EditorPage {
 
   async goto() {
     await this.page.goto('https://realworld.qa.guru/#/editor');
-    await this.page.waitForSelector('[placeholder="Article Title"]', { timeout: 10000 });
+    await this.page.waitForSelector('[placeholder="Article Title"]');
   }
 
   async createArticle(title, description, content, tags) {
@@ -20,7 +20,7 @@ export class EditorPage {
     await this.contentInput.fill(content);
     await this.tagsInput.fill(tags);
     await this.publishButton.click();
-    await this.page.waitForURL(/\/article\//, { timeout: 60000 });
+    await this.page.waitForURL(/\/article\//);
     return this.page.url().split('/article/')[1];
   }
 

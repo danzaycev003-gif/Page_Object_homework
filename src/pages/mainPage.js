@@ -21,7 +21,7 @@ export class MainPage {
   }
 
   async getFirstArticleAuthor() {
-    await this.articlePreviews.first().waitFor({ state: 'visible', timeout: 10000 });
+    await this.articlePreviews.first().waitFor({ state: 'visible' });
     return await this.articleAuthors.first().innerText();
   }
 

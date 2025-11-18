@@ -16,7 +16,7 @@ export class LoginPage {
     await this.passwordInput.fill(password);
     await this.loginButton.click();
     await this.page.waitForURL('https://realworld.qa.guru/#/');
-    await this.page.waitForSelector('.nav-link', { timeout: 10000 });
+    await this.page.waitForSelector('.nav-link');
   }
   
 }
