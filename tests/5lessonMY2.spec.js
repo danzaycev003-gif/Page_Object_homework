@@ -10,7 +10,6 @@ test.describe('Тесты с авторизацией', () => {
   let articlePage;
   let mainPage;
   let articleSlug = '';
-  let commentText = '';
 
   test.beforeEach(async ({ page }) => {
     loginPage = new LoginPage(page);
@@ -18,37 +17,70 @@ test.describe('Тесты с авторизацией', () => {
     articlePage = new ArticlePage(page);
     mainPage = new MainPage(page);
 
-  // Вход
     await loginPage.goto();
     await loginPage.login('sasha.ahsas987@mail.ru', 'KoniSpringerDLSS28(');
-
-  // Создание и редактирование новой статьи
-    await editorPage.goto();
-    const timestamp = Date.now();
-    const testTitle = `Тестовая статья ${timestamp}`;
-
-    articleSlug = await editorPage.createArticle(
-      testTitle,
-      `Описание ${timestamp}`,
-      `Содержание ${timestamp}`,
-      `тег${timestamp}`
-    );
   });
 
+  // создание и редактирование статьи
   test('Создание статьи', async () => {
-    await expect(articlePage.articleContent).toBeVisible();
-    await expect(articlePage.articleTitle).toBeVisible();
+    await editorPage.goto();
+
+    const timestamp = Date.now();
+    const title = `Тестовая статья ${timestamp}`;
+    const description = `Описание ${timestamp}`;
+    const body = `Содержание ${timestamp}`;
+    const tag = `тег${timestamp}`;
+
+    articleSlug = await editorPage.createArticle(title, description, body, tag);
+    await articlePage.goto(articleSlug);
+
+    await expect(articlePage.articleTitle).toHaveText(title);
+    await expect(articlePage.articleContent).toContainText(body);
   });
 
   test('Редактирование статьи', async () => {
+    await editorPage.goto();
+
+    const timestamp = Date.now();
+    const title = `Статья для редактирования ${timestamp}`;
+
+    articleSlug = await editorPage.createArticle(
+      title,
+      `Описание ${timestamp}`,
+      `Содержимое ${timestamp}`,
+      `тег${timestamp}`
+    );
+
     await articlePage.goto(articleSlug);
     await articlePage.editArticle();
 
-    await editorPage.updateArticle('Обновленное название');
-    await expect(articlePage.articleTitle).toHaveText('Обновленное название');
+    const updatedTitle = 'Обновленное название';
+    await editorPage.updateArticle(updatedTitle);
+
+    await expect(articlePage.articleTitle).toHaveText(updatedTitle);
   });
 
-// Переход на страницу автора
+  // добавление в избранное
+  test('Добавление статьи в избранное', async () => {
+    await editorPage.goto();
+
+    const timestamp = Date.now();
+    const title = `Статья избранное ${timestamp}`;
+
+    articleSlug = await editorPage.createArticle(
+      title,
+      `Описание ${timestamp}`,
+      `Текст ${timestamp}`,
+      `тег${timestamp}`
+    );
+
+    await articlePage.goto(articleSlug);
+    await articlePage.addToFavorites();
+
+    await expect(articlePage.favoriteButton).toContainText(/Unfavorite|Favorite/);
+  });
+
+  // Переход на профиль автора
   test('Переход на страницу профиля автора', async () => {
     await mainPage.goto();
     await mainPage.clickGlobalFeed();
@@ -60,7 +92,7 @@ test.describe('Тесты с авторизацией', () => {
     expect(await mainPage.articlePreviews.count()).toBeGreaterThan(0);
   });
 
-// Фильтрация по тегу
+  // Фильтрация по тегу
   test('Фильтрация статей по тегу', async () => {
     await mainPage.goto();
     await mainPage.clickGlobalFeed();
@@ -70,12 +102,5 @@ test.describe('Тесты с авторизацией', () => {
 
     await expect(mainPage.tagList).toContainText(tag);
   });
-
-// Добавление в избранное
-  test('Добавление статьи в избранное', async () => {
-    await articlePage.goto(articleSlug);
-    await articlePage.addToFavorites();
-
-    await expect(articlePage.favoriteButton).toContainText(/Unfavorite|Favorite/);
-  });
 });
+
